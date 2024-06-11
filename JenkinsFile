@@ -6,23 +6,29 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t darinpope/dp-alpine:latest .'
+                bat 'docker build -t darinpope/dp-alpine:latest .'
             }
         }
         stage('Login') {
             steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                script {
+                    def dockerhubUser = env.DOCKERHUB_CREDENTIALS_USR
+                    def dockerhubPass = env.DOCKERHUB_CREDENTIALS_PSW
+                    bat """
+                    echo ${dockerhubPass} | docker login -u ${dockerhubUser} --password-stdin
+                    """
+                }
             }
         }
         stage('Push') {
             steps {
-                sh 'docker push darinpope/dp-alpine:latest'
+                bat 'docker push darinpope/dp-alpine:latest'
             }
         }
     }
     post {
         always {
-            sh 'docker logout'
+            bat 'docker logout'
         }
     }
 }
