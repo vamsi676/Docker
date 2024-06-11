@@ -1,7 +1,12 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('surya-dockerhub')
+        APP_NAME = "webgoat_jenkins"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "surya8899"
+        DOCKER_PASS = 'surya-dockerhub'
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
     }
     stages {
         stage('Checkout') {
@@ -9,31 +14,21 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/vamsi676/Docker'
             }
         }
-        stage('Build') {
-            steps {
-                bat 'docker build -t surya8899/dp-alpine:latest .'
-            }
-        }
-        stage('Login') {
+        
+        stage('Docker Build & Push') {
             steps {
                 script {
-                    def dockerhubUser = env.DOCKERHUB_CREDENTIALS_USR
-                    def dockerhubPass = env.DOCKERHUB_CREDENTIALS_PSW
-                    bat """
-                    echo ${dockerhubPass} | docker login -u ${dockerhubUser} --password-stdin
-                    """
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+
+                    docker.withRegistry('',DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push('latest')  
+                    }
                 }
             }
         }
-        stage('Push') {
-            steps {
-                bat 'docker push surya8899/dp-alpine:latest'
-            }
-        }
-    }
-    post {
-        always {
-            bat 'docker logout'
-        }
     }
 }
+   
