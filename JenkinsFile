@@ -17,7 +17,11 @@ pipeline {
         stage('Login') {
             steps {
                 script {
-                    bat 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    def dockerhubUser = env.DOCKERHUB_CREDENTIALS_USR
+                    def dockerhubPass = env.DOCKERHUB_CREDENTIALS_PSW
+                    bat """
+                    echo ${dockerhubPass} | docker login -u ${dockerhubUser} --password-stdin
+                    """
                 }
             }
         }
