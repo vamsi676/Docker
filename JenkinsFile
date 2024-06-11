@@ -4,9 +4,14 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
     stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/vamsi676/Docker'
+            }
+        }
         stage('Build') {
             steps {
-                bat 'docker build -t darinpope/dp-alpine:latest .'
+                bat 'docker build -t surya8899/dp-alpine:latest .'
             }
         }
         stage('Login') {
@@ -22,7 +27,7 @@ pipeline {
         }
         stage('Push') {
             steps {
-                bat 'docker push darinpope/dp-alpine:latest'
+                bat 'docker push surya8899/dp-alpine:latest'
             }
         }
     }
